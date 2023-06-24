@@ -2,8 +2,15 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect
 from MBTIAPP.forms import Signupform,MbtiForm,CommentForm
-from .models import Post, Profile, Comment
+from .models import Post, Profile, Comment,Category
+from .serializers import PostSerializer,CommentSerializer
 # from django.urls import reverse
+from rest_framework.views import APIView
+from rest_framework.generics import CreateAPIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 # Create your views here.
@@ -44,7 +51,8 @@ def blog(request):
     return render(request, 'MBTIAPP/blog.html', context)
 
 def new(request):
-    return render(request, 'MBTIAPP/postcreate.html')
+    context={'post':Post.objects.all()}
+    return render(request, 'MBTIAPP/postcreate.html',context)
 
 def postcreate(request):
     if(request.method == 'POST'):
@@ -52,7 +60,12 @@ def postcreate(request):
         post.title=request.POST['title']
         post.content=request.POST['content']
         post.poster = request.user
-        post.save()     
+        post.catego=request.POST['category']
+        #cate=Category()
+        #cate.name=request.POST['category']
+        #post.catego=cate.name
+        post.save() 
+        #cate.save()    
     return redirect('MBTIAPP:blog')
 
 def comment_create(request, pk):
@@ -121,8 +134,6 @@ def result(request):
 
 
 
-
-
 def signup(request):
     if request.method == "POST":
         form = Signupform(request.POST)
@@ -136,3 +147,75 @@ def signup(request):
     else:
         form = Signupform()
     return render(request, 'MBTIAPP/signup.html', {'form' : form})
+
+#serializer 이용
+
+class PostCreateView(CreateAPIView):
+    serializer_class = PostSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(poster_id=self.request.user.id)
+    
+class PostDetailView(APIView):
+    
+    def get(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        serializer = PostSerializer(post, context={'request': request})
+        return Response(serializer.data)
+
+
+class PostEditView(APIView):
+    def put(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        serializer = PostSerializer(post, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostDeleteView(APIView):
+    def delete(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class CategoryClass(APIView):
+    def get(self,request,category_id):
+        category = get_object_or_404(Category, pk=category_id)
+        posts = Post.objects.filter(catego=category)
+        if not posts:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)  
+    
+class PersonalPost(APIView):
+    permission_classes = [IsAuthenticated]  # 자기자신
+    def get(self, request, format=None):
+        profile_id = request.user.id  # 자기자신의 id가져오기
+        posts = Post.objects.filter(poster_id=profile_id)
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class PersonalComment(APIView):
+    permission_classes = [IsAuthenticated]  # 자기자신
+    def get(self, request, format=None):
+        profile_id = request.user.id  # 자기자신의 id가져오기
+        comments = Comment.objects.filter(commenter_id=profile_id)
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class PeoplePost(APIView):
+   def get(self, request, profile_id, format=None):
+    posts = Post.objects.filter(poster_id=profile_id)
+    serializer = PostSerializer(posts, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+          
+       
+def profile_detail(request, pk):
+    profile = get_object_or_404(Profile, pk=pk)
+    context = {'profile': profile}
+    return render(request, 'MBTIAPP/profile_detail.html', context)
+
+    

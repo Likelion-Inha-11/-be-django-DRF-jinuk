@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.urls import reverse
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import User
 
@@ -18,7 +19,8 @@ class Profile(AbstractUser):
     
 class Post(models.Model):
     title =models.CharField(max_length=50)
-    poster = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE ,default=1)
+    poster = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    catego = models.ForeignKey("Category", on_delete=models.CASCADE)
     content = models.TextField()
     
     def __str__(self):
@@ -31,4 +33,15 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.content
+    
+#카테고리
+class Category(models.Model):
+    name = models.CharField(max_length=20)
+
+    def __str__(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("home")
+
 
