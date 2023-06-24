@@ -156,29 +156,6 @@ class PostCreateView(CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(poster_id=self.request.user.id)
     
-class PostDetailView(APIView):
-    
-    def get(self, request, pk):
-        post = get_object_or_404(Post, pk=pk)
-        serializer = PostSerializer(post, context={'request': request})
-        return Response(serializer.data)
-
-
-class PostEditView(APIView):
-    def put(self, request, pk):
-        post = Post.objects.get(pk=pk)
-        serializer = PostSerializer(post, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class PostDeleteView(APIView):
-    def delete(self, request, pk):
-        post = Post.objects.get(pk=pk)
-        post.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 class CategoryClass(APIView):
     def get(self,request,category_id):
@@ -211,7 +188,30 @@ class PeoplePost(APIView):
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
-          
+class PostDetailView(APIView):
+    
+    def get(self, request, pk):
+        post = get_object_or_404(Post, pk=pk)
+        serializer = PostSerializer(post, context={'request': request})
+        return Response(serializer.data)
+
+
+class PostEditView(APIView):
+    def put(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        serializer = PostSerializer(post, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PostDeleteView(APIView):
+    def delete(self, request, pk):
+        post = Post.objects.get(pk=pk)
+        post.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
        
 def profile_detail(request, pk):
     profile = get_object_or_404(Profile, pk=pk)
