@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import authenticate, login
 from django.shortcuts import redirect
+from django.http import HttpResponse
 from MBTIAPP.forms import Signupform,MbtiForm,CommentForm
 from .models import Post, Profile, Comment,Category
 from .serializers import PostSerializer,CommentSerializer
@@ -61,11 +62,7 @@ def postcreate(request):
         post.content=request.POST['content']
         post.poster = request.user
         post.catego=request.POST['category']
-        #cate=Category()
-        #cate.name=request.POST['category']
-        #post.catego=cate.name
-        post.save() 
-        #cate.save()    
+        post.save()  
     return redirect('MBTIAPP:blog')
 
 def comment_create(request, pk):
@@ -188,6 +185,15 @@ class PeoplePost(APIView):
     serializer = PostSerializer(posts, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+def like_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.user in post.like.all():
+        post.like.remove(request.user)
+    else:
+        post.like.add(request.user)
+    return redirect('MBTIAPP:detail', pk=post_id)
+
 class PostDetailView(APIView):
     
     def get(self, request, pk):
@@ -213,9 +219,4 @@ class PostDeleteView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
        
-def profile_detail(request, pk):
-    profile = get_object_or_404(Profile, pk=pk)
-    context = {'profile': profile}
-    return render(request, 'MBTIAPP/profile_detail.html', context)
-
     

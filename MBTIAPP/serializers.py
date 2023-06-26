@@ -8,11 +8,11 @@ class ProfileSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PostSerializer(serializers.ModelSerializer):
-    profile = serializers.ReadOnlyField(source='profile.id')
+    post=serializers.ReadOnlyField()
 
     class Meta:
         model = Post
-        fields = ['title','catego','content','profile']
+        fields='__all__'
         
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:

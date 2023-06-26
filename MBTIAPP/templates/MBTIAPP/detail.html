@@ -10,7 +10,19 @@
         <p>{{ post.content }}</p>
         <h2>작성자</h2>
         <span>{{ post.poster }}({{ post.poster.user_mbti }})</span><br><br><br>
+        <form method="POST" action="{% url 'MBTIAPP:like_post' post.id %}">
+            {% csrf_token %}
+            <button type="submit">
+                {% if request.user in post.like.all %}
+                    Unlike
+                {% else %}
+                    Like
+                {% endif %}
+            </button>
+            <p>좋아요 수: {{ post.get_like_count }}</p>
+        </form>
         {% if user == post.poster %}
+    
         <a href="{% url 'MBTIAPP:edit' post.pk %}">수정하기</a>
         <a href="{% url 'MBTIAPP:delete' post.pk %}">삭제하기</a>
         {% endif %}

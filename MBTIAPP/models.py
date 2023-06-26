@@ -22,9 +22,14 @@ class Post(models.Model):
     poster = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     catego = models.ForeignKey("Category", on_delete=models.CASCADE)
     content = models.TextField()
+    #좋아요 기능은 다대다로 구현한다.
+    like=models.ManyToManyField(Profile,related_name='likes',blank=True)
     
     def __str__(self):
         return self.title
+    
+    def get_like_count(self):
+        return self.like.count()
     
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)

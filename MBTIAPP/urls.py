@@ -21,11 +21,10 @@ urlpatterns = [
     path('<int:pk>/comment/', views.comment_create, name='comment_create'),
     path('<int:post_pk>/comment/<int:comment_pk>/delete/', views.comment_delete, name='comment_delete'),
     path('<int:post_pk>/comment/<int:comment_pk>/edit/', views.comment_edit, name='comment_edit'),
-    path('profiles/<int:pk>/', views.profile_detail, name='profile-detail'),
     path('blog/<int:category_id>/posts/', views.CategoryClass.as_view(), name='category_posts_api'),
     path('profile/posts/', views.PersonalPost.as_view(), name='personal_posts_api'),
     path('profile/comments/', views.PersonalComment.as_view(), name='personal_comments_api'),
     path('profile/posts/<int:profile_id>/', views.PeoplePost.as_view(), name='people_posts_api'),
-
+    path('like/<int:post_id>/', views.like_post, name="like_post"),
     
 ]
